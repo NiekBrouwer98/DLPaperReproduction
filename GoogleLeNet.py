@@ -201,8 +201,8 @@ class Inception(nn.Module):
         self.branch1 = conv_block(in_channels, ch1x1, kernel_size=1)
 
         self.branch2 = nn.Sequential(
-            conv_block(in_channels, ch3x3red, kernel_size=1), conv_block(ch3x3red, ch3x3, kernel_size=3, padding=1)
-        )
+            conv_block(in_channels, ch5x5red, kernel_size=1), conv_block(ch3x3red, ch5x5, kernel_size=3, padding=1)
+        ) #Changed Ch3x3 to Ch5x5
 
         self.branch3 = nn.Sequential(
             conv_block(in_channels, ch5x5red, kernel_size=1),
