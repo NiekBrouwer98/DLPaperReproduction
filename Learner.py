@@ -70,3 +70,56 @@ class IndividualLearner(GoogleLeNet.GoogLeNet):
         x = F.normalize(x)
         return x
 
+
+    def a4_to_e4(self, x):
+        # N x 480 x 14 x 14
+        a4 = self.inception4a(x)
+        # N x 512 x 14 x 14
+        b4 = self.inception4b(a4)
+        # N x 512 x 14 x 14
+        c4 = self.inception4c(b4)
+        # N x 512 x 14 x 14
+        d4 = self.inception4d(c4)
+        # N x 528 x 14 x 14
+        e4 = self.inception4e(d4)
+        # N x 832 x 14 x 14      
+        return e4
+
+    def forward(self, x, ret_att=False, sampling=True):
+        # N x 3 x 224 x 224
+        sp = self.feat_spatial(x)
+        # output of pool3
+        att_input = self.a4_to_e4(sp)
+        atts = [self.att[i](att_input) for i in range(self.att_heads)] # (N, att_heads, depth, H, W)
+        # Normalize attention map
+        for i in range(len(atts)):
+            N, D, H, W = atts[i].size()
+            att = atts[i].view(-1, H*W)
+            att_max, _ = att.max(dim=1, keepdim=True)
+            att_min, _ = att.min(dim=1, keepdim=True)
+            atts[i] = ((att - att_min) / (att_max - att_min)).view(N, D, H, W)
+        
+        embedding = torch.cat([self.feat_global(atts[i]*sp).unsqueeze(1) for i in range(self.att_heads)], 1)
+        embedding = torch.flatten(embedding, 1)
+        if sampling:
+            return self.sampled(embedding) if not ret_att else (self.sampled(embedding), atts)
+        else:
+            return (embedding, atts) if ret_att else embedding
+
+
+    def l2_norm(x):
+        if len(x.shape):
+            x = x.reshape((x.shape[0],-1))
+        return F.normalize(x, p=2, dim=1)
+
+
+    def get_distance(x):
+        _x = x.detach()
+        sim = torch.matmul(_x, _x.t())
+        sim = torch.clamp(sim, max=1.0)
+        dist = 2 - 2*sim
+        dist += torch.eye(dist.shape[0]).to(dist.device)   # maybe dist += torch.eye(dist.shape[0]).to(dist.device)*1e-8
+        dist = dist.sqrt()
+        return dist
+
+
