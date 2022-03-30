@@ -142,14 +142,11 @@ class SourceSampler(torch.utils.data.Sampler):
 
 
 def main_train():
-    from sampler import BalancedBatchSampler
     data = ImageFolderWithName(return_fn=False, root='CUB_100_train/images', transform=transformations)
-    dataset = torch.utils.data.DataLoader(data, batch_sampler=BalancedBatchSampler(data, batch_size=32, batch_k=4, length=2000), num_workers=4, pin_memory=True)
 
-    return dataset
+    return data
 
 def main_test():
-    data = ImageFolderWithName(return_fn=False, root='CUB_100_test/images',transform=transformations)
-    dataset = torch.utils.data.DataLoader(data)
+    data = ImageFolderWithName(return_fn=True, root='CUB_100_test/images', transform=transformations)
 
-    return dataset
+    return data

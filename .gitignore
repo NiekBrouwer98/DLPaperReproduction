@@ -1,8 +1,7 @@
 # dataset directories
-CUB_100_test/
-CUB_100_train/
-/cub_100_test_2022-03-22_0835
-/cub_100_train_2022-03-23_0816
+/CUB_100_test
+/CUB_100_train
+/runs
 
 #idea
 *.idea

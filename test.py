@@ -4,6 +4,7 @@ import pickle
 from PIL import Image
 import train
 import os
+from dataset import main_test
 
 def loader_test(fn):
     parts = fn.split('/')
@@ -15,7 +16,7 @@ if __name__ == '__main__':
     model = train.model
     model.eval()
 
-    data = train.imagefolder(os.path.join(args.img_folder_test, 'train'))
+    data = main_test()
     # print('class to idx:', data.class_to_idx)
     # print(len(data.targets), data.targets)
 

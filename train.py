@@ -14,7 +14,7 @@ from tensorboardX import SummaryWriter
 from PIL import Image
 from sampler import BalancedBatchSampler
 from model import MetricLearner
-from dataset import MetricData, SourceSampler, ImageFolderWithName, invTrans, main_train
+from dataset import MetricData, SourceSampler, ImageFolderWithName, invTrans, main_train, main_test
 
 eps = 1e-8
 mlog = torchnet.logger.MeterLogger(env='logger')
@@ -26,11 +26,11 @@ def get_args():
     parser.add_argument('--pretrain', type=str, default='/root/.torch/models/googlenet-1378be20.pth', help='pretrain googLeNet model paht')
     parser.add_argument('--att-heads', type=int, default=8, help='number of attention modules')
     parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
-    parser.add_argument('--epochs', type=int, default=200, help='number of epochs plans to train in total')
+    parser.add_argument('--epochs', type=int, default=1, help='number of epochs plans to train in total')
     parser.add_argument('--epoch_start', type=int, default=0, help='start epoch to count from')
-    parser.add_argument('--batch', type=int, default=8, help='batch size')
-    parser.add_argument('--batch_k', type=int, default=4, help='number of samples for a class of a batch')
-    parser.add_argument('--num_batch', type=int, default=5000, help='number of batches per epoch')
+    parser.add_argument('--batch', type=int, default=10, help='batch size')
+    parser.add_argument('--batch_k', type=int, default=5, help='number of samples for a class of a batch')
+    parser.add_argument('--num_batch', type=int, default=10, help='number of batches per epoch')
     parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
     parser.add_argument('--ckpt', type=str, default='./ckpt', help='checkpoint folder')
     parser.add_argument('--resume', action='store_true', help='load previous best model and resume training')
@@ -48,24 +48,13 @@ def get_args():
     parser.add_argument('--in_size', type=int, default=128, help='input tensor shape to put into model')
     return parser.parse_args()
 
-def imagefolder(folder, loader=lambda x: Image.open(x).convert('RGB'), return_fn=False):
-    data = ImageFolderWithName(return_fn=return_fn, root=folder, transform=transforms.Compose([
-                                        transforms.Resize(228),
-                                        transforms.RandomCrop((224, 224)),
-                                        transforms.RandomHorizontalFlip(),
-                                        transforms.ToTensor(),
-                                        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                        std=[0.229, 0.224, 0.225])]),
-                                        loader=loader)
-    return data   
-
 args = get_args()
 
 # device = torch.device('cuda:{}'.format(args.gpu_ids[0])) if args.gpu_ids else torch.device('cpu')
 device = torch.device('cpu')
 
-
-dataset = main_train()
+dataset = torch.utils.data.DataLoader(main_train(), batch_sampler=BalancedBatchSampler(main_train(), batch_size=args.batch, batch_k=args.batch_k, length=args.num_batch),
+                                        num_workers=args.num_workers, pin_memory=True)
 model = MetricLearner(pretrain=args.pretrain, batch_k=args.batch_k, att_heads=args.att_heads)
 if not os.path.exists(args.ckpt):
     os.makedirs(args.ckpt)
@@ -89,7 +78,7 @@ step = 0
 if __name__ == '__main__':
     # TEST DATASET
     if args.test and args.resume:
-        dataset_test = torch.utils.data.DataLoader(imagefolder(return_fn=True, folder=args.img_folder_test), \
+        dataset_test = torch.utils.data.DataLoader(main_test(),
                             batch_size=1, shuffle=True, drop_last=False, num_workers=max(1, int(args.num_workers/2)))
         vis = visdom.Visdom()
         model.eval()
@@ -115,7 +104,7 @@ if __name__ == '__main__':
                     top_4[i] = {'fn': batch[2][0][0], 'query': query.cpu().numpy(), 'top_8': []}
                     vis.image(np.transpose(cv2.imread(os.path.join(args.img_folder_test, top_4[i]['fn']))[..., ::-1], (2, 0, 1)), \
                         win=i+100, opts=dict(title='Query_%d'%i))
-                    print('Added query.')                
+                    print('Added query.')
                 else:
                     embedding = model(batch[0], sampling=False).cpu().numpy()
                     for j in range(4):
