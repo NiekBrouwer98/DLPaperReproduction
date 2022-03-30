@@ -12,9 +12,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-from .._internally_replaced_utils import load_state_dict_from_url
-from ..utils import _log_api_usage_once
-
 __all__ = ["GoogLeNet", "googlenet", "GoogLeNetOutputs", "_GoogLeNetOutputs"]
 
 model_urls = {
@@ -43,7 +40,6 @@ class GoogLeNet(nn.Module):
         dropout_aux: float = 0.7,
     ) -> None:
         super().__init__()
-        _log_api_usage_once(self)
         if blocks is None:
             blocks = [BasicConv2d, Inception, InceptionAux]
         if init_weights is None:
