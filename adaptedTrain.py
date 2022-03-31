@@ -1,3 +1,4 @@
+import shutil
 import sys
 import numpy as np
 import os
@@ -38,14 +39,17 @@ def train_epoch(train_loader, eval_loader, model, best, optimizer, device):
         loss_heter += l_heter.item()
         loss_div += l_div.item()
 
+
+
     loss_homo /= (i+1)
     loss_heter /= (i+1)
     loss_div /= (i+1)
     print('Epoch %d batches %d\tdiv:%.4f\thomo:%.4f\theter:%.4f'%(epoch, i+1, loss_div, loss_homo, loss_heter))
     if (loss_homo+loss_heter+loss_div) < best:
         best = loss_homo + loss_heter + loss_div
-        torch.save({'state_dict': model.cpu().state_dict(), 'epoch': epoch+1, 'loss': best},
-                   './model/{}_{:.4f}.pth'.format("ABE-M", best))
+        torch.save({'state_dict': model.cpu().state_dict(), 'epoch': epoch+1, 'loss': best}, \
+                    os.path.join('./ckpt', '%d_ckpt.pth'%epoch))
+        shutil.copy(os.path.join('./ckpt', '%d_ckpt.pth'%epoch), os.path.join('./ckpt', 'best_performance.pth'))
         print('saved model')
         model.to(device)
 
@@ -76,10 +80,10 @@ if __name__ == '__main__':
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
     traindata = dataset.main_train()
-    train_dataloader = DataLoader(traindata, batch_sampler=BalancedBatchSampler(traindata,batch_size=batch_size, batch_k=4, length=2000), num_workers=4)
+    train_dataloader = DataLoader(traindata, batch_sampler=BalancedBatchSampler(traindata,batch_size=batch_size, batch_k=4, length=2), num_workers=4)
 
     testdata = dataset.main_test()
-    test_dataloader = DataLoader(testdata, batch_sampler=BalancedBatchSampler(testdata,batch_size=batch_size, batch_k=4, length=5000//2))
+    test_dataloader = DataLoader(testdata, batch_sampler=BalancedBatchSampler(testdata,batch_size=batch_size, batch_k=4, length=2))
 
     best = 10000000
     for epoch in range(epochs):

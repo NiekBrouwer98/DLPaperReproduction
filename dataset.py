@@ -66,6 +66,6 @@ def main_train():
     return data
 
 def main_test():
-    data = ImageFolderWithName(return_fn=True, root='CUB_100_test/images', transform=transformations)
+    data = ImageFolderWithName(return_fn=False, root='CUB_100_test/images', transform=transformations)
 
     return data
