@@ -55,7 +55,9 @@ device = torch.device('cpu')
 
 dataset = torch.utils.data.DataLoader(main_train(), batch_sampler=BalancedBatchSampler(main_train(), batch_size=args.batch, batch_k=args.batch_k, length=args.num_batch),
                                         num_workers=args.num_workers, pin_memory=True)
+
 model = MetricLearner(pretrain=args.pretrain, batch_k=args.batch_k, att_heads=args.att_heads)
+
 if not os.path.exists(args.ckpt):
     os.makedirs(args.ckpt)
     print('Init ', args.ckpt)
