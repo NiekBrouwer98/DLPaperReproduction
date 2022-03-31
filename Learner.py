@@ -19,7 +19,7 @@ class IndividualLearner(GoogLeNet.GoogLeNet):
         self.embed_size = 512
         self.kernels = 480
         self.out_dim = int(self.embed_size/self.attention_heads)
-        # How to get to number of in_channels
+        # How to get to number of in_channels?
         self.full_attention = nn.ModuleList([nn.conv2d(in_channels = 832, out_channels=self.kernels, kernel_size =1, bias= False)] for i in range(attention_heads)) #why use 832 as in_channel size?
         self.last_forward = nn.Linear(1024, self.out_dim)
 
@@ -93,7 +93,7 @@ class IndividualLearner(GoogLeNet.GoogLeNet):
         global_extractor = torch.cat([self.global_f(attention_mask[:, i, ...]*spatial).unsqueeze(1) for i in range(self.att_heads)], 1)
         combined_embedding = torch.flatten(global_extractor, 1) # The combined embedding function Bm(x) = G(S(x)*A_m(S(x)))
 
-        return self.sampled(combined_embedding)
+        return self.sampling_method(combined_embedding)
 
 
 
