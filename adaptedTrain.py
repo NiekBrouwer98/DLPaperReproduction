@@ -12,9 +12,8 @@ from adaptedModel import ABE_M
 import criterion
 import dataset
 from learningrate import find_lr
-from sampler import BalancedBatchSampler
-import dill
-import pickle
+from sampler_excelfile import SourceSampler
+from sampler_excelfile import MetricData
 
 
 def train_epoch(train_loader, eval_loader, model, best, optimizer, device):
@@ -72,22 +71,34 @@ def train_epoch(train_loader, eval_loader, model, best, optimizer, device):
 
 if __name__ == '__main__':
     device = torch.device('cpu')
-    epochs = 100
-    batch_size = 32
+    epochs = 1
+    batch_size = 64
     model = ABE_M()
     model.to(device)
     lr = 1e-4
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-
-    traindata = dataset.main_train()
-    train_dataloader = DataLoader(traindata, batch_sampler=BalancedBatchSampler(traindata,batch_size=batch_size, batch_k=4, length=2), num_workers=4)
-
-    testdata = dataset.main_test()
-    test_dataloader = DataLoader(testdata, batch_sampler=BalancedBatchSampler(testdata,batch_size=batch_size, batch_k=4, length=2))
+    
+    datatrain = MetricData(data_root='CUB_100_train', \
+                                  anno_file=r'annos_traindataset.xlsx', \
+                                  idx_file= 'idx_trainset.pkl', \
+                                  return_fn=True)
+    
+    samplertrain = SourceSampler(datatrain)
+    print('Batch sampler len:', len(samplertrain))
+    traindata_loader = torch.utils.data.DataLoader(datatrain, batch_sampler=samplertrain)
+    
+    datatest = MetricData(data_root='CUB_100_test', \
+                                  anno_file=r'annos_testdataset.xlsx', \
+                                  idx_file= 'idx_testset.pkl', \
+                                  return_fn=True)
+    
+    samplertest = SourceSampler(datatest)
+    print('Batch sampler len:', len(samplertest))
+    testdata_loader = torch.utils.data.DataLoader(datatest, batch_sampler=samplertest)
 
     best = 10000000
     for epoch in range(epochs):
         print('epoch {}/{}'.format(epoch, epochs))
-        train_epoch(train_dataloader, test_dataloader, model, best, optimizer, device)
+        train_epoch(traindata_loader, testdata_loader, model, best, optimizer, device)
 
 
