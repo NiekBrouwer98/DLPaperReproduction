@@ -1,17 +1,10 @@
 import shutil
-import sys
-import numpy as np
 import os
 import torch
-import torch.nn as nn
-import torchvision.transforms as transforms
 import torch.optim as optim
-from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader
 from adaptedModel import ABE_M
 import criterion
-import dataset
-from learningrate import find_lr
 from sampler_excelfile import SourceSampler
 from sampler_excelfile import MetricData
 
@@ -47,8 +40,8 @@ def train_epoch(train_loader, eval_loader, model, best, optimizer, device):
     if (loss_homo+loss_heter+loss_div) < best:
         best = loss_homo + loss_heter + loss_div
         torch.save({'state_dict': model.cpu().state_dict(), 'epoch': epoch+1, 'loss': best}, \
-                    os.path.join('./ckpt', '%d_ckpt.pth'%epoch))
-        shutil.copy(os.path.join('./ckpt', '%d_ckpt.pth'%epoch), os.path.join('./ckpt', 'best_performance.pth'))
+                   os.path.join('../ckpt', '%d_ckpt.pth' % epoch))
+        shutil.copy(os.path.join('../ckpt', '%d_ckpt.pth' % epoch), os.path.join('../ckpt', 'best_performance.pth'))
         print('saved model')
         model.to(device)
 
@@ -79,18 +72,18 @@ if __name__ == '__main__':
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     
     datatrain = MetricData(data_root='data/CUB_100_train', \
-                                  anno_file=r'data/annos_traindataset.xlsx', \
-                                  idx_file= 'data/idx_trainset.pkl', \
-                                  return_fn=True)
+                           anno_file=r'../data/annos_traindataset.xlsx', \
+                           idx_file='../data/idx_trainset.pkl', \
+                           return_fn=True)
     
     samplertrain = SourceSampler(datatrain)
     print('Batch sampler len:', len(samplertrain))
     traindata_loader = torch.utils.data.DataLoader(datatrain, batch_sampler=samplertrain)
     
     datatest = MetricData(data_root='data/CUB_100_test', \
-                                  anno_file=r'data/annos_testdataset.xlsx', \
-                                  idx_file= 'data/idx_testset.pkl', \
-                                  return_fn=True)
+                          anno_file=r'../data/annos_testdataset.xlsx', \
+                          idx_file='../data/idx_testset.pkl', \
+                          return_fn=True)
     
     samplertest = SourceSampler(datatest)
     print('Batch sampler len:', len(samplertest))

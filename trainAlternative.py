@@ -1,12 +1,9 @@
-import shutil
-import sys
 import numpy as np
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from adaptedModel import ABE_M
+from DLPaperReproduction.scripts.adaptedModel import ABE_M
 from criterion import ABE_loss
 from sampler_excelfile import SourceSampler
 from sampler_excelfile import MetricData
