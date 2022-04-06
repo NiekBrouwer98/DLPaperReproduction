@@ -79,7 +79,7 @@ if __name__ == '__main__':
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     
     datatrain = MetricData(data_root='CUB_100_train', \
-                                  anno_file=r'CUB_100_train/annos_traindataset.xlsx', \
+                                  anno_file=r'annos_traindataset.xlsx', \
                                   idx_file= 'idx_trainset.pkl', \
                                   return_fn=True)
     
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     traindata_loader = torch.utils.data.DataLoader(datatrain, batch_sampler=samplertrain)
     
     datatest = MetricData(data_root='CUB_100_test', \
-                                  anno_file=r'CUB_100_test/annos_testdataset.xlsx', \
+                                  anno_file=r'annos_testdataset.xlsx', \
                                   idx_file= 'idx_testset.pkl', \
                                   return_fn=True)
     
