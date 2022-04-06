@@ -15,13 +15,13 @@ from learningrate import find_lr
 from sampler_excelfile import SourceSampler
 from sampler_excelfile import MetricData
 
-
 def train_epoch(train_loader, eval_loader, model, best, optimizer, device):
     model.train()
     loss_div, loss_homo, loss_heter = 0, 0, 0
     for i, batch in enumerate(train_loader):
         x, y = batch
         x = x.to(device)
+
         out = model(x, sampling=True)
         a_indices, anchors, positives, negatives, _ = out
         anchors = anchors.view(anchors.size(0), 4, -1)
@@ -72,24 +72,24 @@ def train_epoch(train_loader, eval_loader, model, best, optimizer, device):
 if __name__ == '__main__':
     device = torch.device('cpu')
     epochs = 1
-    batch_size = 64
+    batch_size = 32
     model = ABE_M()
     model.to(device)
     lr = 1e-4
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     
-    datatrain = MetricData(data_root='CUB_100_train', \
-                                  anno_file=r'annos_traindataset.xlsx', \
-                                  idx_file= 'idx_trainset.pkl', \
+    datatrain = MetricData(data_root='data/CUB_100_train', \
+                                  anno_file=r'data/annos_traindataset.xlsx', \
+                                  idx_file= 'data/idx_trainset.pkl', \
                                   return_fn=True)
     
     samplertrain = SourceSampler(datatrain)
     print('Batch sampler len:', len(samplertrain))
     traindata_loader = torch.utils.data.DataLoader(datatrain, batch_sampler=samplertrain)
     
-    datatest = MetricData(data_root='CUB_100_test', \
-                                  anno_file=r'annos_testdataset.xlsx', \
-                                  idx_file= 'idx_testset.pkl', \
+    datatest = MetricData(data_root='data/CUB_100_test', \
+                                  anno_file=r'data/annos_testdataset.xlsx', \
+                                  idx_file= 'data/idx_testset.pkl', \
                                   return_fn=True)
     
     samplertest = SourceSampler(datatest)

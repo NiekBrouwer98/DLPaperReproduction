@@ -12,7 +12,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-
 GoogLeNetOutputs = namedtuple("GoogLeNetOutputs", ["logits", "aux_logits2", "aux_logits1"])
 GoogLeNetOutputs.__annotations__ = {"logits": Tensor, "aux_logits2": Optional[Tensor], "aux_logits1": Optional[Tensor]}
 

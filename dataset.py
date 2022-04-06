@@ -1,15 +1,6 @@
-import scipy.io as sio
-import torch
-import os
-import numpy as np
-from PIL import Image
-from scipy.special import comb
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.transforms.functional as TF
-import dill
-import pickle
-
 
 mean, std = [0.485, 0.456, 0.406], [1.0, 1.0, 1.0]
 
@@ -57,7 +48,6 @@ class ImageFolderWithName(datasets.ImageFolder):
         else:
             return img, label, self.imgs[i]
 
-from sampler import BalancedBatchSampler
 
 def main_train():
 
