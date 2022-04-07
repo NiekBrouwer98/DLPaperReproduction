@@ -3,7 +3,7 @@ import os
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from adaptedModel import ABE_M
+from DLPaperReproduction.modelImplementation import ABE_M
 import criterion
 from sampler_excelfile import SourceSampler
 from sampler_excelfile import MetricData

@@ -8,11 +8,15 @@ from PIL import Image
 import os
 import pandas as pd
 import math
+from torch.utils.data.sampler import Sampler
 
 mean, std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
 
 
-class SourceSampler(torch.utils.data.Sampler):
+class SourceSampler(Sampler):
+    """"
+    Sample batches
+    """
     def __init__(self, data_source, batch_k=2, batch_size=32):
         self.data_source = data_source
         self.batch_k = batch_k
@@ -54,6 +58,9 @@ class SourceSampler(torch.utils.data.Sampler):
 
 
 class MetricData(torch.utils.data.Dataset):
+    """"
+    Preprocessing the data
+    """
 
     def __init__(self, data_root, anno_file, idx_file, return_fn=False):
         self.return_fn = return_fn
@@ -76,14 +83,14 @@ class MetricData(torch.utils.data.Dataset):
 
         # check if it is train or test set en do the right transform on the data  #torchvision.transforms.Lambda(self.pad), \
         if self.labels[0] == 1:
-            self.transforms = transforms.Compose([transforms.Resize(size=256), \
-                                                  transforms.RandomCrop((224, 224)), \
-                                                  transforms.RandomHorizontalFlip(), transforms.ToTensor(), \
+            self.transforms = transforms.Compose([transforms.Resize(size=256),
+                                                  transforms.RandomCrop((224, 224)),
+                                                  transforms.RandomHorizontalFlip(), transforms.ToTensor(),
                                                   transforms.Normalize(mean=mean, std=std)])
         else:
-            self.transforms = transforms.Compose([transforms.Resize(size=255), \
-                                                  transforms.CenterCrop((224, 224)), \
-                                                  transforms.RandomHorizontalFlip(), transforms.ToTensor(), \
+            self.transforms = transforms.Compose([transforms.Resize(size=255),
+                                                  transforms.CenterCrop((224, 224)),
+                                                  transforms.RandomHorizontalFlip(), transforms.ToTensor(),
                                                   transforms.Normalize(mean=mean, std=std)])
 
     def pad(img, size_max=256):
