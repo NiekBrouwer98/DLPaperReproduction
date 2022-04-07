@@ -22,7 +22,7 @@ class SourceSampler(Sampler):
         self.batch_k = batch_k
         self.num_samples = len(self.data_source)
         self.batch_size = batch_size
-        print('number of data:', len(self.data_source))
+        # print('number of data:', len(self.data_source))
 
         labels, num_samples = np.unique(self.data_source.labels, return_counts=True)
         self.max_samples = max(num_samples)
@@ -38,12 +38,12 @@ class SourceSampler(Sampler):
         return iter_len
 
     def __iter__(self):
-        for i in range(2):  # (self.__len__()):
+        for i in range(self.__len__()):  # (self.__len__()):
             # sample both positive and negative labels
             pos_labels = np.random.choice(self.labels, int(self.batch_size / (2 * self.batch_k)), replace=False)
-            print('positieve labels', pos_labels)
+            # print('positieve labels', pos_labels)
             neg_labels = np.random.choice(self.labels, int(self.batch_size / (2 * self.batch_k)), replace=False)
-            print('negatieve labels', neg_labels)
+            # print('negatieve labels', neg_labels)
             ret_idx = []
             for label in pos_labels:
                 ret_idx.extend(np.random.choice(self.data_source.idx[label][label], 2, replace=False))
@@ -53,7 +53,7 @@ class SourceSampler(Sampler):
                 label_idx = np.random.choice(self.data_source.idx[label][label], 1)
                 neg_label_idx = np.random.choice(self.data_source.idx[neg_label][neg_label], 1)
                 ret_idx.extend([label_idx[0], neg_label_idx[0]])
-            print('sampler:', (ret_idx))
+            # print('sampler:', (ret_idx))
             yield ret_idx
 
 
