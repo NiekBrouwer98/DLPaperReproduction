@@ -7,6 +7,7 @@ from DLPaperReproduction.model import ABE_M
 from criterion import ABE_loss
 from sampler_excelfile import SourceSampler
 from sampler_excelfile import MetricData
+from tensorboardX import SummaryWriter
 
 
 def train(train_loader, model, loss_fn, optimizer, device):
@@ -41,13 +42,16 @@ def train(train_loader, model, loss_fn, optimizer, device):
             loss_outputs.backward()
             optimizer.step()
 
-        if i % 20 == 0:
+        if i % 100 == 0:
             message = 'Train: [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(i * target.size(0), len(train_loader.dataset),
                                                                       100. * i / len(train_loader), np.mean(losses))
             print(message)
+
             losses = []
 
     print('total loss {:.6f}'.format(total_loss / (i + 1)))
+
+    return total_loss / (i + 1)
 
 
 def test(test_loader, model, loss_fn, device, best):
@@ -65,16 +69,22 @@ def test(test_loader, model, loss_fn, device, best):
     with torch.no_grad():
         model.eval()
         val_loss = 0
+        val_losses = []
         for i, batch in enumerate(test_loader):
-            x,y = batch
+            x, y = batch
             x = x.to(device)
             y = y.to(device)
 
             output = model(x)
 
             loss_outputs = loss_fn(output, y)
-            # print(loss_outputs)
+            val_losses.append(loss_outputs.item())
             val_loss += loss_outputs.item()
+
+            # if i % 100 == 0:
+            #     writer.add_scalars(main_tag='Validate', tag_scalar_dict={'loss': np.mean(val_losses)},global_step=i)
+            #
+            #     val_losses = []
 
     print('val loss {:.6f}'.format(val_loss / (i + 1)))
     if best > val_loss / (i + 1):
@@ -83,13 +93,16 @@ def test(test_loader, model, loss_fn, device, best):
             torch.save(model.module.state_dict(), './model/score_{:.4f}.pth'.format(best))
         else:
             torch.save(model.state_dict(), './model/score_{:.4f}.pth'.format(best))
-    return best
+
+    val_loss = val_loss / (i+1)
+    return best, val_loss
 
 
 def main():
     """"
     Main method looping over both training and testing
     """
+    writer = SummaryWriter()
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     epochs = 100
@@ -125,9 +138,24 @@ def main():
     best = 10000000
     for epoch in range(epochs):
         print('epoch {}/{}'.format(epoch, epochs))
-        train(traindata_loader, model, loss_fn, optimizer, device)
-        best = test(testdata_loader, model, loss_fn, device, best)
+        train_loss = train(traindata_loader, model, loss_fn, optimizer, device)
+        writer.add_scalars(main_tag='Train', tag_scalar_dict={'loss': train_loss}, global_step=epoch)
+
+        best, val_loss = test(testdata_loader, model, loss_fn, device, best)
+        writer.add_scalars(main_tag='Validate', tag_scalar_dict={'loss': val_loss}, global_step=epoch)
+
+    print('Finished Training')
+    writer.flush()
+    writer.close()
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    from tensorboard import program
+
+    tracking_address = "./runs" # the path of your log file.
+
+    tb = program.TensorBoard()
+    tb.configure(argv=[None, '--logdir', tracking_address])
+    url = tb.launch()
+    print(f"Tensorflow listening on {url}")

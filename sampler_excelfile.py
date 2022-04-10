@@ -38,7 +38,8 @@ class SourceSampler(Sampler):
         return iter_len
 
     def __iter__(self):
-        for i in range(self.__len__()):  # (self.__len__()):
+        # for i in range(2):
+        for i in range(self.__len__()):
             # sample both positive and negative labels
             pos_labels = np.random.choice(self.labels, int(self.batch_size / (2 * self.batch_k)), replace=False)
             # print('positieve labels', pos_labels)
