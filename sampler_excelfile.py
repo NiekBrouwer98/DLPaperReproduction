@@ -38,8 +38,8 @@ class SourceSampler(Sampler):
         return iter_len
 
     def __iter__(self):
-        # for i in range(2):
-        for i in range(self.__len__()):
+        for i in range(100):
+        # for i in range(self.__len__()):
             # sample both positive and negative labels
             pos_labels = np.random.choice(self.labels, int(self.batch_size / (2 * self.batch_k)), replace=False)
             # print('positieve labels', pos_labels)
@@ -115,9 +115,10 @@ class MetricData(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         # print('__getitem__\t', i, i%16, '\tlabel:', self.labels[i])
-        img = Image.open(os.path.join(self.data_root, self.fns[int(i - (self.labels[0] - 1) * 58.64)])).convert('RGB')
+        img = Image.open(os.path.join(self.data_root, self.fns[int(i - (self.labels[0] - 1) * 58.64)-1])).convert('RGB')
         img = self.transforms(img)
-        return img if not self.return_fn else (img, self.labels[int(i - (self.labels[0] - 1) * 58.64)])
+        return img if not self.return_fn else (img, self.labels[int(i - (self.labels[0] - 1) * 58.64)-1])
+
 
     def __len__(self):
         return self.anno.size

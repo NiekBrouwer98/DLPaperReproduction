@@ -26,28 +26,29 @@ def train(train_loader, model, loss_fn, optimizer, device):
     losses = []
     total_loss = 0
     for i, batch in enumerate(train_loader):
+        print(i)
         x, y = batch
-        x = x.to(device)
-        y = y.to(device)
+        # x = x.to(device)
+        # y = y.to(device)
 
-        optimizer.zero_grad()
-        output = model(x)
-        target = y
-
-        loss_outputs = loss_fn(output, target)
-
-        losses.append(loss_outputs.item())
-        total_loss += loss_outputs.item()
-        if loss_outputs.requires_grad is True:
-            loss_outputs.backward()
-            optimizer.step()
-
-        if i % 10 == 0:
-            message = 'Train: [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(i * target.size(0), len(train_loader.dataset),
-                                                                      100. * i / len(train_loader), np.mean(losses))
-            print(message)
-
-            losses = []
+        # optimizer.zero_grad()
+        # output = model(x)
+        # target = y
+        #
+        # loss_outputs = loss_fn(output, target)
+        #
+        # losses.append(loss_outputs.item())
+        # total_loss += loss_outputs.item()
+        # if loss_outputs.requires_grad is True:
+        #     loss_outputs.backward()
+        #     optimizer.step()
+        #
+        # if i % 100 == 0:
+        #     message = 'Train: [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(i * target.size(0), len(train_loader.dataset),
+        #                                                               100. * i / len(train_loader), np.mean(losses))
+        #     print(message)
+        #
+        #     losses = []
 
     print('total loss {:.6f}'.format(total_loss / (i + 1)))
 
@@ -71,15 +72,16 @@ def test(test_loader, model, loss_fn, device, best):
         val_loss = 0
         val_losses = []
         for i, batch in enumerate(test_loader):
+            print(i)
             x, y = batch
             x = x.to(device)
             y = y.to(device)
-
-            output = model(x)
-
-            loss_outputs = loss_fn(output, y)
-            val_losses.append(loss_outputs.item())
-            val_loss += loss_outputs.item()
+            #
+            # output = model(x)
+            #
+            # loss_outputs = loss_fn(output, y)
+            # val_losses.append(loss_outputs.item())
+            # val_loss += loss_outputs.item()
 
             # if i % 100 == 0:
             #     writer.add_scalars(main_tag='Validate', tag_scalar_dict={'loss': np.mean(val_losses)},global_step=i)
@@ -87,12 +89,12 @@ def test(test_loader, model, loss_fn, device, best):
             #     val_losses = []
 
     print('val loss {:.6f}'.format(val_loss / (i + 1)))
-    if best > val_loss / (i + 1):
-        best = val_loss / (i + 1)
-        if torch.cuda.device_count() > 1:
-            torch.save(model.module.state_dict(), './model/score_{:.4f}.pth'.format(best))
-        else:
-            torch.save(model.state_dict(), './model/score_{:.4f}.pth'.format(best))
+    # if best > val_loss / (i + 1):
+    #     best = val_loss / (i + 1)
+    #     if torch.cuda.device_count() > 1:
+    #         torch.save(model.module.state_dict(), './model/score_{:.4f}.pth'.format(best))
+    #     else:
+    #         torch.save(model.state_dict(), './model/score_{:.4f}.pth'.format(best))
 
     val_loss = val_loss / (i+1)
     return best, val_loss
