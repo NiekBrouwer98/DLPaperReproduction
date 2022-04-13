@@ -105,4 +105,4 @@ def main(modelpath):
 
 
 if __name__ == '__main__':
-    main('./model/score_1.0400.pth')
+    main('./model/score_0.2646.pth')
